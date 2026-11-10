@@ -11,18 +11,21 @@ from arkanoid_core import *
 
 @arkanoid_method
 def cargar_nivel(self) -> list[str]:
-    texto = self.level_path.read_text()
-    lineas = texto.splitlines()
+    contenido = self.level_path.read_text()
+    lineas_crudas = contenido.splitlines()
     
     self.layout = []
-    for linea in lineas:
-        if linea != "":
+    for linea in lineas_crudas:
+        if linea.strip() != "":
             self.layout.append(linea)
             
-    ancho = len(self.layout[0])
+    if len(self.layout) == 0:
+        raise ValueError("Error: El archivo del nivel está vacío.")
+        
+    ancho_referencia = len(self.layout[0])
     for fila in self.layout:
-        if len(fila) != ancho:
-            raise ValueError("Las filas tienen distinto tamaño.")
+        if len(fila) != ancho_referencia:
+            raise ValueError("Error: El nivel tiene filas con distinta longitud.")
             
     return self.layout
 
@@ -80,9 +83,9 @@ def actualizar_bola(self) -> None:
     ball_rect = self.obtener_rect_bola()
 
     if ball_rect.left <= 0 or ball_rect.right >= self.SCREEN_WIDTH:
-        self.ball_velocity.x *= -1
+        self.ball_velocity.x = -self.ball_velocity.x
     if ball_rect.top <= 0:
-        self.ball_velocity.y *= -1
+        self.ball_velocity.y = -self.ball_velocity.y
         
     if ball_rect.bottom >= self.SCREEN_HEIGHT:
         self.lives -= 1
@@ -94,18 +97,23 @@ def actualizar_bola(self) -> None:
         return
 
     if ball_rect.colliderect(self.paddle) and self.ball_velocity.y > 0:
-        self.ball_velocity.y *= -1
+        self.ball_velocity.y = -self.ball_velocity.y
 
-    indice = ball_rect.collidelist(self.blocks)
-    if indice != -1:
-        self.ball_velocity.y *= -1
+    indice_colision = -1
+    for i in range(len(self.blocks)):
+        if ball_rect.colliderect(self.blocks[i]):
+            indice_colision = i
+            break  
+
+    if indice_colision != -1:
+        self.ball_velocity.y = -self.ball_velocity.y
         
-        simbolo = self.block_symbols[indice]
+        simbolo = self.block_symbols[indice_colision]
         self.score += self.BLOCK_POINTS[simbolo]
         
-        self.blocks.pop(indice)
-        self.block_colors.pop(indice)
-        self.block_symbols.pop(indice)
+        self.blocks.pop(indice_colision)
+        self.block_colors.pop(indice_colision)
+        self.block_symbols.pop(indice_colision)
         
         if len(self.blocks) == 0:
             self.running = False
@@ -119,13 +127,16 @@ def dibujar_escena(self) -> None:
         self.dibujar_rectangulo(self.blocks[i], self.block_colors[i])
         
     self.dibujar_rectangulo(self.paddle, self.PADDLE_COLOR)
-    self.dibujar_circulo((int(self.ball_pos.x), int(self.ball_pos.y)), self.BALL_RADIUS, self.BALL_COLOR)
+    centro_bola = (int(self.ball_pos.x), int(self.ball_pos.y))
+    self.dibujar_circulo(centro_bola, self.BALL_RADIUS, self.BALL_COLOR)
     
     self.dibujar_texto(f"Puntuación: {self.score}", (20, 20))
     self.dibujar_texto(f"Vidas: {self.lives}", (self.SCREEN_WIDTH - 120, 20))
     
     if self.end_message != "":
-        self.dibujar_texto(self.end_message, (self.SCREEN_WIDTH // 2 - 80, self.SCREEN_HEIGHT // 2), grande=True)
+        pos_x = self.SCREEN_WIDTH // 2 - 80
+        pos_y = self.SCREEN_HEIGHT // 2
+        self.dibujar_texto(self.end_message, (pos_x, pos_y), grande=True)
 
 @arkanoid_method
 def run(self) -> None:
@@ -154,7 +165,6 @@ def run(self) -> None:
         self.actualizar_pantalla()
         self.clock.tick(self.FPS)
 
-
 def main() -> None:
     """Permite ejecutar el juego desde la línea de comandos."""
     import argparse
@@ -171,7 +181,6 @@ def main() -> None:
 
     game = ArkanoidGame(args.level)
     game.run()
-
 
 if __name__ == "__main__":
     main()

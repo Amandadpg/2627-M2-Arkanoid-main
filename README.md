@@ -116,3 +116,12 @@ Completa los métodos marcados con `TODO` siguiendo el orden propuesto y respeta
 - Control del flujo de juego (inicialización, loop principal y cierre limpio).
 - Gestión de colisiones y actualización de puntuación/vidas.
 - Apartado opcional: se valorará positivamente añadir niveles extra, mejoras visuales o efectos de sonido siempre que no rompan la estructura base.
+
+
+**Uso de Inteligencia Artificial**
+En esta práctica he utilizado IA de forma puntual para ayudarme a entender algunas partes de proyecto y resolver dudas mientras programaba. En concreto, me ha servido para:
+- Entender bien cómo funciona Rect.colliderect para hacer que la bola detecte los choques y rebote correctamente contra los bloques.
+- Solucionar un fallo raro que me pasaba en mi ordenador (la ventana del juego no se abría y se quedaba oculta por una línea del archivo core).
+- Ver ejemplos de cómo organizar los bucles for y los condicionales de una forma sencilla y paso a paso, usando lo que hemos dado en clase en lugar de funciones avanzadas.
+
+He repasado y probado todo el código paso a paso para asegurarme de que lo entiendo perfectamente, comprobando todos los casos que he dejado apuntados en el documento de pruebas.
